@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Clientes</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <center>
+        <h1>Cadastro de Clientes</h1>
+        <br>
+        <form id="formCliente">
+            <label for="nome">Nome completo:</label><br>
+            <input type="text" id="nome" placeholder="Insira o nome" required /><br><br>
+
+            <label for="email">E-mail:</label><br>
+            <input type="email" id="email" placeholder="Insira o email" required /><br><br>
+
+            <label for="telefone">Telefone:</label><br>
+            <input type="text" id="telefone" placeholder="(00) 00000-0000" /><br><br>
+
+            <button type="submit">Cadastrar Cliente</button><br><br>
+        </form>
+
+
+    </center>
+
+    <script>
+        const url = 'http://localhost/lojati/back/index.php?rota=clientes';
+        function carregarClientes() {
+    fetch(url)
+        .then(resposta => resposta.json())
+        .then(clientes => {
+            const lista = document.getElementById('listaClientes');
+            lista.innerHTML = '';
+
+            if (Array.isArray(clientes)) {
+                clientes.forEach(cliente => {
+                    // Pega o valor correto independente de vir como 'nome' ou 'NOME'
+                    const nome = cliente.nome || cliente.NOME || 'Sem nome';
+                    const email = cliente.email || cliente.EMAIL || 'Sem e-mail';
+                    const telefone = cliente.telefone || cliente.TELEFONE || 'Sem telefone';
+
+                    lista.innerHTML += `<li><strong>${nome}</strong> - ${email} (${telefone})</li>`;
+                });
+            }
+        })
+        .catch(erro => console.error('Erro ao carregar clientes:', erro));
+}
+        document.getElementById('formCliente').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const dados = {
+                nome: document.getElementById('nome').value,
+                email: document.getElementById('email').value,
+                telefone: document.getElementById('telefone').value
+            };
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            })
+            .then(resposta => resposta.json())
+            .then(resultado => {
+                if (resultado.mensagem) {
+                    alert(resultado.mensagem);
+                    document.getElementById('formCliente').reset();
+                    carregarClientes();
+                } else {
+                    alert(resultado.erro);
+                }
+            })
+            .catch(erro => alert('Erro na requisição.'));
+        });
+
+        carregarClientes();
+    </script>
+</body>
+</html>
